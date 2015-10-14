@@ -36,31 +36,32 @@ int main()
 	struct termios torestore_termios;
 	int val;
 	int curr_h;
-	int start;
 	parseInfo *parsedline;
 
-	if (tcgetattr(STDIN_FILENO, &torestore_termios) < 0) /* get whatever is there */
-		perror("getattr");
+	if( isatty(STDIN_FILENO) ){
+		if (tcgetattr(STDIN_FILENO, &torestore_termios) < 0) /* get whatever is there */
+			perror("getattr");
 
-	if (tcgetattr(STDIN_FILENO, &save_termios) < 0) /* get whatever is there */
-		perror("getattr");
+		if (tcgetattr(STDIN_FILENO, &save_termios) < 0) /* get whatever is there */
+			perror("getattr");
 
-	/* save_termios.c_lflag &= ~ICANON;*/ /* set non canonical mode */
-	save_termios.c_lflag &= ~(ECHO | ICANON); /* set non canonical mode, turn off echo */
-	save_termios.c_cc[VMIN] = 0;  /* one byte at a time */
-	save_termios.c_cc[VTIME] = 0; /* no timer */
+		/* save_termios.c_lflag &= ~ICANON;*/ /* set non canonical mode */
+		save_termios.c_lflag &= ~(ECHO | ICANON); /* set non canonical mode, turn off echo */
+		save_termios.c_cc[VMIN] = 0;  /* one byte at a time */
+		save_termios.c_cc[VTIME] = 0; /* no timer */
 
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &save_termios) < 0) 
-		perror("setattr");
+		if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &save_termios) < 0) 
+			perror("setattr");
+	}
 
 	curr_pos = 0;
 	parsedline = NULL;
-	start = 1;
+	
 
 	printf("%s ", PROMPT);fflush(0);
 	while (1) {    
+
 		if (read(STDIN_FILENO, &ch, 1) > 0) {
-			start = 0;
 			if (ch == '\n') {
 				putchar(ch);
 				fflush(0);
@@ -96,21 +97,25 @@ int main()
 					curr_pos = strlen(buff);
 					redraw_buff();
 				}
-			} else if(curr_pos<MAX_LINE_LEN) {
-				buff[curr_pos ++] = ch;
-				putchar(ch);fflush(0);
-			}else if( ch == '\004') {
+			} else if( ch == '\004') {
 				//Do nothing here for now. Maybe flash? 
 				printf(" GOODBYE\n");
 				break;
+			}else if(curr_pos<MAX_LINE_LEN) {
+				buff[curr_pos ++] = ch;
+				putchar(ch);fflush(0);
 			}
-		} 
+		} else if( !isatty( STDIN_FILENO) ) {
+			printf( "GOODBYE\n");
+			break;
+		}
 	 }
 
-	 //restore previous terminal attributes
-	 if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &torestore_termios) < 0) 
-		perror("setattr");
-
+	 if( isatty( STDIN_FILENO) ){
+		 //restore previous terminal attributes
+		 if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &torestore_termios) < 0) 
+			perror("setattr");
+	}
 }
 
 
