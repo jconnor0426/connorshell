@@ -99,16 +99,12 @@ int main()
 			} else if(curr_pos<MAX_LINE_LEN) {
 				buff[curr_pos ++] = ch;
 				putchar(ch);fflush(0);
-			}else if( ch == 3 || ch == 4) {
+			}else if( ch == '\004') {
 				//Do nothing here for now. Maybe flash? 
 				printf(" GOODBYE\n");
 				break;
 			}
-		} else if( ch == EOF )
-		{
-			printf(" GOODBYE\n");
-			break;
-		}
+		} 
 	 }
 
 	 //restore previous terminal attributes
