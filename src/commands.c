@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "parse.h"
-#include "shell.h"
 
 extern struct termios torestore_termios;
 
@@ -21,13 +20,16 @@ int run( parseInfo* parsedline )
 	{
 		rtstatus = cmd_pwd( &(parsedline->CommArray[0]) );
 	}
-
+	else if( strncmp( parsedline->CommArray[0].command, "cd", 2 ) == 0 ) //cd Command
+	{
+		rtstatus = cmd_cd( &(parsedline->CommArray[0]) );
+	}
 
 	return rtstatus;
 }
 int cmd_exit( struct commandType* cmd )
 {
-	printf( "\r%s GOODBYE!\n\nprocess exited\n", PROMPT );
+	printf( "GOODBYE!\n\nprocess exited\n" );
 	//Restore Terminal Settings
 	if( isatty( STDIN_FILENO) ){
 		 //restore previous terminal attributes
@@ -50,5 +52,31 @@ int cmd_pwd( struct commandType* cmd )
 		perror( "PWD FAIL");
 	
 	//After notifying the fail of getcwd don't pass the error up
+	return 0;
+}
+
+int cmd_cd( struct commandType* cmd )
+{
+	int rtstatus;
+	char* home;
+
+	//if arguments are 1 ( just the command) then change directory to ../
+	if( cmd->VarNum > 1 )
+	{
+		printf( "[CMD_CD] Attempting to move to %s\n", cmd->VarList[1] );
+		rtstatus = chdir( cmd->VarList[1] );
+		if( rtstatus )
+			perror( "CD FAILED" );
+	}
+	else //if arguments are more than 1 just use the path in the second argument
+	{
+		home = getenv("HOME");
+		printf( "[CMD_CD] Attempting to move to %s\n", home );
+		rtstatus = chdir( home);
+		if( rtstatus)
+			perror( "CD FAILED");	
+	}	
+
+	//Errors handled within this function
 	return 0;
 }
