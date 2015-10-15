@@ -79,7 +79,16 @@ parseInfo *parse (char *cmdline) {
 	com_pos=0;
 	while (cmdline[i] != '\n' && cmdline[i] != '\0') {
 
-		if (cmdline[i] == '<') { //Start in file handling
+		if (cmdline[i] == '&') { //Start Background Process Handling
+			Result->boolBackground=1;
+			
+			if (cmdline[i+1] != '\n' && cmdline[i+1] != '\0') {
+		 		fprintf(stderr, "Ignore anything beyond &.\n");
+			}
+			break; 
+		} //End backgournd Process Handling
+
+		else if (cmdline[i] == '<') { //Start in file handling
 			Result->boolInfile=1;				//Note that there is an input file
 			while (isspace(cmdline[++i]));		//Get to file
 			pos=0;
@@ -120,7 +129,16 @@ parseInfo *parse (char *cmdline) {
 				i++;
 			} 
 		}//End out File Handling
-
+		
+		else if (cmdline[i] == '|') { //Start pipe handling
+			command[com_pos]='\0';
+			parse_command(command, &Result->CommArray[Result->pipeNum]);
+			com_pos=0;
+			end =0;
+			Result->pipeNum++;
+			i++;
+		} // End Pipe handling
+		
 		else {
 			if (end == 1) {
 	 			fprintf(stderr, "Error.Wrong format of input\n");

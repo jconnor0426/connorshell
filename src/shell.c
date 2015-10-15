@@ -7,15 +7,17 @@
 
 #include "shell.h"
 #include "parse.h"
+#include "commands.h"
 
-
+//Gloabals
 char history[1000][512];
 int curr_history = 0;
 
 char buff[512];
 int curr_pos;
-
 int curr_cmd = 0;
+
+struct termios torestore_termios;
 
 void redraw_buff()
 {
@@ -33,10 +35,10 @@ int main()
 {
 	char ch;
 	struct termios save_termios;
-	struct termios torestore_termios;
 	int val;
 	int curr_h;
 	parseInfo *parsedline;
+	int runstatus;
 
 	if( isatty(STDIN_FILENO) ){
 		if (tcgetattr(STDIN_FILENO, &torestore_termios) < 0) /* get whatever is there */
@@ -74,13 +76,20 @@ int main()
 				parsedline = parse(buff);
 				if(  parsedline )
 				{
-					print_info( parsedline );
+					/*Execute Parse Structure Here*/
+					runstatus = run( parsedline );
+					if( runstatus != CMD_SUCCESS) //Then error
+					{
+						printf("[main] Error executing command\n");
+					} 
+
+					/*End Execution*/
 					free_info( parsedline );
 				}else
 				{
 					printf( "[main] error parsing line buffer\n");
 				}
-				/*Execute Parse Structure Here*/
+				
 
 
 				printf("%s ", PROMPT);fflush(0);
