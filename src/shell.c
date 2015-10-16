@@ -89,8 +89,6 @@ int main()
 				{
 					printf( "[main] error parsing line buffer\n");
 				}
-				
-
 
 				printf("%s ", PROMPT);fflush(0);
 				curr_pos = 0;

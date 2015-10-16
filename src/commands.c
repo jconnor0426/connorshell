@@ -47,6 +47,11 @@ int run( parseInfo* parsedline )
 
 		if( pid == 0 ) //Process Child Stuff
 		{
+			//If Background Process, set the parent group id to 0
+			if( parsedline->boolBackground )
+			{
+				setpgid(0, 0);
+			}
 			//Input Redirection
 			if( parsedline->boolInfile )
 			{
@@ -69,9 +74,6 @@ int run( parseInfo* parsedline )
 				}else
 					perror( "failed opening file" );
 			}
-
-			
-			printf( "[RUN] %d\n", parsedline->pipeNum );
 
 			//If there are more than one pipes set them up
 			if( parsedline->pipeNum )
@@ -111,7 +113,12 @@ int run( parseInfo* parsedline )
 			}
 		}else
 		{
-			pid = wait( &stat );
+			if( !parsedline->boolBackground)
+				while( wait( &stat ) != pid );
+			else
+			{
+				printf( "[%d]\tBackground Process Running\n", pid);
+			}
 		}
 	}
 
