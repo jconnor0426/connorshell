@@ -21,6 +21,9 @@ int run( parseInfo* parsedline )
 	int i;
 	int input_fd, ouput_fd;
 
+	if( parsedline->CommArray[0].command == NULL )
+		return -1;
+
 	//Check for Builtin Commands in the first pipe	
 	if( strncmp( parsedline->CommArray[0].command, "exit", 4 ) == 0 ) //Exit Command
 	{

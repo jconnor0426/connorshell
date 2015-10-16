@@ -80,7 +80,6 @@ int main()
 					runstatus = run( parsedline );
 					if( runstatus != CMD_SUCCESS) //Then error
 					{
-						printf("[main] Error executing command\n");
 					} 
 
 					/*End Execution*/
