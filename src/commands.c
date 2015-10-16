@@ -16,6 +16,10 @@ int run( parseInfo* parsedline )
 	int rtstatus;
 	int pid;
 	int stat;
+	int fd;
+	int fd_pipe[2];
+	int i;
+	int input_fd, ouput_fd;
 
 	//Check for Builtin Commands in the first pipe	
 	if( strncmp( parsedline->CommArray[0].command, "exit", 4 ) == 0 ) //Exit Command
@@ -44,12 +48,67 @@ int run( parseInfo* parsedline )
 		if( pid == 0 ) //Process Child Stuff
 		{
 			//Input Redirection
-
+			if( parsedline->boolInfile )
+			{
+				fd = open( parsedline->inFile, O_RDONLY, 1 );
+				if( fd != -1 )
+				{
+					dup2( fd, STDIN_FILENO );
+					close( fd );
+				}else
+					perror( "failed opening file" );
+			}
 			//Output Redirection
+			if( parsedline->boolOutfile )
+			{
+				fd = open( parsedline->outFile, O_RDWR | O_CREAT, 0666 );
+				if( fd != -1 )
+				{
+					dup2( fd, STDOUT_FILENO );
+					close( fd );
+				}else
+					perror( "failed opening file" );
+			}
 
-			if(execvp( parsedline->CommArray[0].command, parsedline->CommArray[0].VarList ))
-				perror("problem executing command" );
-			exit(0);
+			
+			printf( "[RUN] %d\n", parsedline->pipeNum );
+
+			//If there are more than one pipes set them up
+			if( parsedline->pipeNum )
+			{
+				input_fd = 0;	//Start with the first fd being STDIN
+
+				for( i = 0; i < parsedline->pipeNum; i++ )
+				{
+					pipe( fd_pipe ); //Create the pipe
+					ouput_fd = fd_pipe[1];
+
+					if( fork() == 0) 
+					{
+						dup2( input_fd, STDIN_FILENO );
+						close( input_fd);
+
+						dup2( ouput_fd, STDOUT_FILENO );
+						close( ouput_fd );
+
+						execvp( parsedline->CommArray[i].command, parsedline->CommArray[i].VarList ); 
+
+					}else
+					{
+						close( ouput_fd );
+						input_fd = fd_pipe[0];
+					}
+				}
+
+				dup2( input_fd, STDIN_FILENO );
+				execvp( parsedline->CommArray[i].command, parsedline->CommArray[i].VarList ); 
+				exit(0);
+			}else
+			{
+				if(execvp( parsedline->CommArray[0].command, parsedline->CommArray[0].VarList ))
+					perror("problem executing command" );
+				exit(0);
+			}
 		}else
 		{
 			pid = wait( &stat );
