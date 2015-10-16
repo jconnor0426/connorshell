@@ -126,11 +126,3 @@ int main()
 			perror("setattr");
 	}
 }
-
-
-
-
-
-
-
-

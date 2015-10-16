@@ -5,12 +5,18 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "parse.h"
+#include "commands.h"
+#include "shell.h"
 
 extern struct termios torestore_termios;
+extern char** environ;
 
 int run( parseInfo* parsedline )
 {
 	int rtstatus;
+	int pid;
+	int stat;
+
 	//Check for Builtin Commands in the first pipe	
 	if( strncmp( parsedline->CommArray[0].command, "exit", 4 ) == 0 ) //Exit Command
 	{
@@ -23,6 +29,31 @@ int run( parseInfo* parsedline )
 	else if( strncmp( parsedline->CommArray[0].command, "cd", 2 ) == 0 ) //cd Command
 	{
 		rtstatus = cmd_cd( &(parsedline->CommArray[0]) );
+	}
+	else if( strncmp( parsedline->CommArray[0].command, "env", 3 ) == 0 ) //env Command
+	{
+		rtstatus = cmd_env( &(parsedline->CommArray[0]) );
+	}
+	else if( strncmp( parsedline->CommArray[0].command, "set", 3 ) == 0 ) //env Command
+	{
+		rtstatus = cmd_set( &(parsedline->CommArray[0]) );
+	}else //Attempt to process the command
+	{
+		pid = fork();
+
+		if( pid == 0 ) //Process Child Stuff
+		{
+			//Input Redirection
+
+			//Output Redirection
+
+			if(execvp( parsedline->CommArray[0].command, parsedline->CommArray[0].VarList ))
+				perror("problem executing command" );
+			exit(0);
+		}else
+		{
+			pid = wait( &stat );
+		}
 	}
 
 	return rtstatus;
@@ -79,4 +110,64 @@ int cmd_cd( struct commandType* cmd )
 
 	//Errors handled within this function
 	return 0;
+}
+
+int cmd_env( struct commandType* cmd )
+{
+	int i = 0;
+	char* current_var;
+	
+	current_var = environ[0];
+	while( current_var )
+	{
+		printf( "%s\n", current_var);
+		current_var = environ[++i];
+	}
+
+	return 0;
+}
+
+int cmd_set( struct commandType* cmd )
+{
+	char key[MAX_LINE_LEN];
+	char value[MAX_LINE_LEN];
+	int cur_pos;
+	int i;
+	int rtstatus;
+
+
+	//if no arguments just return
+	if( cmd->VarNum < 2 )
+		return CMD_SUCCESS;
+
+	//Just for the first argument
+	//Get Key
+
+	i = 0;
+	cur_pos = 0;
+	while( cmd->VarList[1][i] != '='  && cmd->VarList[1][i] != '\0'  )
+	{
+		key[cur_pos++] = cmd->VarList[1][i++];
+	}
+
+	if( cmd->VarList[1][i] == '\0' )
+	{
+		printf( "[SET] no value specified using empty string");
+		value[0] = '\0' ;
+	}else
+	{
+		i++; //Increment past the = sign
+		cur_pos = 0;
+		while( !isspace(cmd->VarList[1][i]) && cmd->VarList[1][i] != '\0'  )
+		{
+			value[cur_pos++] = cmd->VarList[1][i++];
+		}	
+	}
+
+	rtstatus = setenv( key, value, 1 ); //key=value and 1 to set the overwrite
+	if( rtstatus )
+		perror( "setenv" );
+	
+	
+	return CMD_SUCCESS;
 }
