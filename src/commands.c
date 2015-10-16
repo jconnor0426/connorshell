@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include "parse.h"
 #include "commands.h"
 #include "shell.h"
@@ -240,3 +241,4 @@ int cmd_set( struct commandType* cmd )
 	
 	return CMD_SUCCESS;
 }
+

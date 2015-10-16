@@ -1,0 +1,4 @@
+command < inputfile
+command < input file
+command arg1 arg2 < inputfile
+command arg1 arg2 < input file file

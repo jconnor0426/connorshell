@@ -1,0 +1,37 @@
+$ command1
+Parse struct:
+
+# of pipes:0
+Command 1 is command1.	Arg 0: command1 
+
+no input redirection.
+no output redirection.
+Foreground process.
+$ command2
+Parse struct:
+
+# of pipes:0
+Command 1 is command2.	Arg 0: command2 
+
+no input redirection.
+no output redirection.
+Foreground process.
+$ command command command
+Parse struct:
+
+# of pipes:0
+Command 1 is command.	Arg 0: command Arg 1: command Arg 2: command 
+
+no input redirection.
+no output redirection.
+Foreground process.
+$ 
+Parse struct:
+
+# of pipes:0
+Command 0 is NULL
+
+no input redirection.
+no output redirection.
+Foreground process.
+$ GOODBYE!

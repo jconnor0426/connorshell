@@ -1,20 +1,9 @@
-/************************************************************************  
- *   parse.c  -  The parsing portion of my small shell                                     *
- *   Syntax:     myshell command1 [< infile] [| command]* [> outfile] [&]       *
- ************************************************************************/
-
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "parse.h"
 #include "shell.h"
-
-/* parse - parse a new line 
- *
- * Accepts: nothing
- * Returns: parse information structure
- */
 
 void init_info(parseInfo *p) {
 	int i;

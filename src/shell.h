@@ -4,5 +4,4 @@
 #define MAX_LINE_LEN 80
 #define PROMPT "$"
 
-
 #endif

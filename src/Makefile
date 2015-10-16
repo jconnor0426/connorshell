@@ -15,3 +15,6 @@ parse.o: parse.h parse.c
 
 myls: myls.c
 	$(cc) -o $(trgtls) myls.c 
+
+clean:
+	rm *.o
